@@ -72,7 +72,13 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   `r` is the same as `x`, and `a` the same as `alpha` and `w`. When a block has a key twice, the
   last one wins. The game skips any other key and writes `Unexpected token` in its error log.
   A `position` has no fourth value: the game reads its `w` and drops it, without a line in its
-  error log.
+  error log. The game also swaps a `position`'s `x` and `z`: `x` moves the emitter along the z
+  axis, and `z` along the x axis. The preview does the same.
+- **A `position` without keys**, such as `position = { 0 1 0 }`. The game reads a subsystem's
+  `position` only by its keys. It writes `Unexpected token` in its error log for the first value,
+  then reads the rest of the particle wrongly and loads none of it, so the effect shows nothing.
+  Write `position = { x = 0 y = 1 z = 0 }`. A force's `position` is different: it takes three
+  values without keys.
 - **A key of the other emitter shape**: `box_emitter_x` with `emitter_type = sphere`, or
   `sphere_emitter_radius` with `emitter_type = box`. The game stores the two shapes' keys in the
   same three places, so such a key still sets a value of the shape you have:
@@ -95,14 +101,9 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
 - **`local_space = yes` that the shader does not place.** The game passes the effect's place to
   `gfx/FX/particle.shader` in `InstanceWorldMatrix`. The base game's file does not use it. So the
   game draws these particles at their own coordinates on the map: around its south-west corner,
-  moved by the subsystem's `position`, and not at the effect. The game draws nothing of a
-  `particle`, children included, unless one of its top-level `subsystem` blocks has no
-  `local_space = yes` and sends out particles. A child without it does not count, and neither does
-  a subsystem whose `emission` is 0. The warning says when that happens. With such a subsystem, the
-  `local_space` particles still show only while it has particles alive: if it starts late
-  (`start`), stops (`duration`) or its particles die young (`life`), they vanish meanwhile. Leave
-  `local_space` out, or ship a `particle.shader` in your mod whose vertex shader multiplies the
-  position by `InstanceWorldMatrix`.
+  and not at the effect. The subsystem's `position` moves them there, its `x` towards the north
+  and its `z` towards the east. Leave `local_space` out, or ship a `particle.shader` in your mod
+  whose vertex shader multiplies the position by `InstanceWorldMatrix`.
 - **A texture that is missing**: your
   [playset](../reference/glossary.md#playset) (the game, your mod and the mods it depends on) has
   no file at the texture's `file`.

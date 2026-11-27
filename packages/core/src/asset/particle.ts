@@ -95,7 +95,8 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'position',
     doc(
       '`{ x = … y = … z = … }`, each a value; `r`, `g` and `b` work as `x`, `y` and `z`',
-      'Where the emitter sits, from the bone of the model where the entity’s event starts the effect.',
+      'Where the emitter sits, from the bone of the model where the entity’s event starts the effect. The game swaps `x` and `z`: `x` moves the emitter along the z axis, and `z` along the x axis. Each value needs its key: without them (`{ 0 1 0 }`) the game logs an error and loses the rest of the particle.',
+      'game',
     ),
   ],
   [
@@ -265,7 +266,7 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'local_space',
     doc(
       YES_NO,
-      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it. With that shader the game draws these particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s `position`), not at the model. It shows them only while a subsystem at the top of the particle without `local_space = yes` has particles alive. When no such subsystem emits, it draws none of the particle, children included.',
+      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it. With that shader the game draws these particles at their own coordinates on the map, around its south-west corner, not at the model. The subsystem’s `position` moves them there: its `x` towards the north and its `z` towards the east.',
       'game',
     ),
   ],
@@ -534,7 +535,8 @@ export type ParticleBlockCode =
   | 'particle-curve-without-duration'
   | 'particle-emitter-keys'
   | 'unknown-particle-shader'
-  | 'particle-local-space-unplaced';
+  | 'particle-local-space-unplaced'
+  | 'particle-position-without-keys';
 
 export interface ParticleBlockDiagnostic extends SourceRange {
   readonly code: ParticleBlockCode;
@@ -563,6 +565,8 @@ interface ParticleEffect {
  * - a curve `time` the game reads as `spawn`;
  * - a curve `duration` of 0 or less, which the game logs and replaces by 1;
  * - box emitter keys on a sphere emitter, and the reverse, which the game logs;
+ * - a value without a key in a subsystem's `position`, which the game logs, after which it reads
+ *   the rest of the particle wrongly and loads none of it (etch#631 step 29);
  * - a word the game does not know in a force's `type`, a subsystem's `sort` or `emitter_type`, or a
  *   curve's `op`, which it skips: the block keeps the word before it, or the reader's default;
  * - when `effects` is given (the effect names of the playset's `gfx/FX/particle.shader`), a
@@ -571,8 +575,7 @@ interface ParticleEffect {
  * - when `localSpacePlaced` is `false` (the playset's `gfx/FX/particle.shader` does not use
  *   `InstanceWorldMatrix`, see `shaderPlacesLocalSpace`), each `local_space = yes`: the game hands
  *   such a subsystem the effect's place only through that matrix, so it draws the particles at their
- *   own coordinates around the map's origin, and draws none of a particle with no top-level
- *   subsystem that emits without it (etch#631 steps 23 and 25).
+ *   own coordinates around the map's origin (etch#631 steps 23 and 28).
  * A missing texture file is the extension's check (`particleTextureFiles`), which needs the disk.
  */
 export function checkParticleBlocks(
@@ -585,9 +588,6 @@ export function checkParticleBlocks(
     const effect = readEffect(block);
     unknownKeys(block, 'particle', out);
     const subsystems = subsystemBlocks(block);
-    const noneDrawn = !propertyBlocks(block.entries, 'subsystem').some(
-      (subsystem) => !isLocalSpace(subsystem) && !neverEmits(subsystem),
-    );
     for (const subsystem of subsystems) {
       unknownKeys(subsystem, 'subsystem', out);
       for (const texture of propertyBlocks(subsystem.entries, 'texture')) {
@@ -597,7 +597,7 @@ export function checkParticleBlocks(
       vectorKeys(subsystem, out);
       emitterKeys(subsystem, out);
       if (effects !== undefined) shaderEffect(subsystem, effects, out);
-      if (localSpacePlaced === false) unplacedLocalSpace(subsystem, noneDrawn, out);
+      if (localSpacePlaced === false) unplacedLocalSpace(subsystem, out);
     }
     for (const curve of propertyBlocks(block.entries, 'animation')) {
       unknownKeys(curve, 'animation', out);
@@ -913,6 +913,17 @@ function vectorKeys(subsystem: BlockNode, out: ParticleBlockDiagnostic[]): void 
     const slots = key === 'position' ? VECTOR_SLOTS.slice(0, 3) : VECTOR_SLOTS;
     const names = key === 'position' ? 'x, y and z' : 'r, g, b and alpha';
     for (const group of propertyBlocks(subsystem.entries, key)) {
+      const bare = group.entries.filter((entry) => entry.kind === 'scalar');
+      const first = bare[0];
+      const last = bare.at(-1);
+      if (key === 'position' && first !== undefined && last !== undefined) {
+        out.push({
+          code: 'particle-position-without-keys',
+          start: first.start,
+          end: last.end,
+          message: `The game reads a position only by its keys, as { x = … y = … z = … }. It does not read a value without a key: it writes in its error log Unexpected token: ${first.text}, then reads the rest of this particle wrongly and loads none of it.`,
+        });
+      }
       for (const entry of group.entries) {
         if (entry.kind !== 'property') continue;
         const name = keyOf(entry);
@@ -996,35 +1007,11 @@ function isLocalSpace(subsystem: BlockNode): boolean {
   return lastScalar(subsystem, 'local_space')?.text.toLowerCase() === 'yes';
 }
 
-/** A subsystem whose `emission` is only zeros, so it never has particles of its own. */
-function neverEmits(subsystem: BlockNode): boolean {
-  let emission: ScalarNode | BlockNode | undefined;
-  for (const entry of subsystem.entries) {
-    if (entry.kind === 'property' && keyOf(entry) === 'emission') emission = entry.value;
-  }
-  if (emission === undefined) return false;
-  const items = valueNames(emission).length === 0 ? numbersOf(emission) : [];
-  return items.length > 0 && items.every((item) => Number(item) === 0);
-}
-
-function numbersOf(value: ScalarNode | BlockNode): string[] {
-  const scalars =
-    value.kind === 'scalar'
-      ? [value]
-      : value.entries.filter((entry): entry is ScalarNode => entry.kind === 'scalar');
-  return scalars.flatMap((scalar) => names(scalar).map((use) => use.name));
-}
-
-function unplacedLocalSpace(
-  subsystem: BlockNode,
-  noneDrawn: boolean,
-  out: ParticleBlockDiagnostic[],
-): void {
+function unplacedLocalSpace(subsystem: BlockNode, out: ParticleBlockDiagnostic[]): void {
   const flag = lastScalar(subsystem, 'local_space');
   if (flag === undefined || !isLocalSpace(subsystem)) return;
-  const where = noneDrawn
-    ? 'This particle has no subsystem at its top level without local_space that emits particles, and then the game draws none of its particles, children included.'
-    : 'So the game draws the particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s position), not at the effect.';
+  const where =
+    'So the game draws the particles at their own coordinates on the map, around its south-west corner, not at the effect; the subsystem’s position moves them there, its x towards the north and its z towards the east.';
   out.push({
     code: 'particle-local-space-unplaced',
     start: flag.start,

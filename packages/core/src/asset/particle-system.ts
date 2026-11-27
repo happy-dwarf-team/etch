@@ -15,6 +15,8 @@
 //   reader's default (`planar`, `none`, `point`, `add`). See `PARTICLE_CHOICES`.
 // - A subsystem's `position` and `color` share one reader: `x`/`r`, `y`/`g`, `z`/`b` and
 //   `w`/`alpha`/`a` fill the same slots, in any case; `position` has no fourth. See `VECTOR_SLOTS`.
+//   The reader stores `z` first and `x` last, and the subsystem takes them in that order, so a
+//   `position`'s `x` moves the emitter along z and its `z` along x (etch#631 step 29).
 // - The sphere and box emitter keys share three values: `sphere_emitter_radius` and
 //   `box_emitter_x` set the same one, the last entry of either winning. See `SHAPE_SLOTS`.
 //
@@ -214,7 +216,8 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
       velocity: get('velocity'),
       size: get('size'),
       life: get('life'),
-      position: [part('position', 0), part('position', 1), part('position', 2)],
+      // `x` and `z` change places: the game puts `z` on the x axis and `x` on the z axis.
+      position: [part('position', 2), part('position', 1), part('position', 0)],
       rotation:
         lastValue(node, 'particle_roll') === undefined ? get('rotation') : get('particle_roll'),
       rotationSpeed:
